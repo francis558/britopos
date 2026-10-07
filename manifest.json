@@ -1,0 +1,36 @@
+{
+  "name": "POS Pro - Sistema Completo",
+  "short_name": "POS Pro",
+  "description": "Sistema completo de punto de venta con inventario, cortes de caja, estadísticas y control de vencimientos.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f0f2f5",
+  "theme_color": "#1a237e",
+  "lang": "es",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "shopping"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Punto de venta",
+      "short_name": "Ventas",
+      "url": "./index.html",
+      "description": "Ir al punto de venta"
+    }
+  ]
+}
