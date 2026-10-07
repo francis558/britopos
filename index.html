@@ -4,7 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
     <meta name="theme-color" content="#1a237e" />
-    <title>Brito-Soft - Sistema Completo</title>
+    <!-- ===== PWA / OFFLINE ===== -->
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon.svg" />
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="POS Pro" />
+    <meta name="description" content="Sistema de punto de venta con inventario, cortes de caja y estadísticas" />
+    <!-- ===== FIN PWA ===== -->
+    <title>POS Pro - Sistema Completo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
@@ -586,7 +596,7 @@
     <!-- LOGIN -->
     <div class="login-container" id="loginContainer">
         <div class="login-box">
-            <div class="logo"><i class="fas fa-store-alt"></i> Brito-Soft</div>
+            <div class="logo"><i class="fas fa-store-alt"></i> POS Pro</div>
             <div class="subtitle">Inicia sesión para continuar</div>
             <div class="form-group">
                 <label><i class="fas fa-user"></i> Usuario</label>
@@ -607,7 +617,7 @@
     <!-- APP PRINCIPAL -->
     <div class="app-container" id="appContainer">
         <nav class="sidebar" id="sidebar">
-            <div class="logo"><i class="fas fa-store-alt"></i> Brito-Soft</div>
+            <div class="logo"><i class="fas fa-store-alt"></i> POS Pro</div>
             <div class="menu-section">
                 <div class="section-title">Principal</div>
                 <div class="menu-item active" data-section="ventas" data-permiso="ventas"><i class="fas fa-shopping-cart"></i> Punto de venta</div>
@@ -2371,7 +2381,7 @@
                 const raw = localStorage.getItem(CONFIG_KEY);
                 if (raw) config = JSON.parse(raw);
             } catch (e) {}
-            const nombreNegocio = config.nombreNegocio || 'Brito-Soft';
+            const nombreNegocio = config.nombreNegocio || 'POS Pro';
             const telefonoNegocio = config.telefonoNegocio || '';
             const etiquetaRNC = (config.etiquetaRNC || 'RNC').trim() || 'RNC';
             const rncNegocio = config.rncNegocio || '';
@@ -2787,7 +2797,7 @@
                         ${retirosHTML}
                     </div>
                     <div style="margin-top:16px; padding-top:12px; border-top:1px dashed #ccc; font-size:12px; color:#888; text-align:center;">
-                        <p>Generado automáticamente por Brito-Soft</p>
+                        <p>Generado automáticamente por POS Pro</p>
                         <p>${formatearFechaHora(new Date())}</p>
                     </div>
                 </div>
@@ -5006,6 +5016,108 @@
                 if (corteActivo !== null && window.innerWidth > 768) buscarInput.focus();
             }
         };
+    </script>
+
+    <!-- ===== SERVICE WORKER + INDICADOR ONLINE/OFFLINE ===== -->
+    <script>
+      // Registrar Service Worker para funcionamiento offline
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('✅ Service Worker registrado. Scope:', reg.scope))
+            .catch(err => console.error('❌ Error registrando SW:', err));
+        });
+      }
+
+      // Indicador visual online/offline
+      (function() {
+        function crearIndicador() {
+          if (document.getElementById('offlineIndicator')) return;
+          const div = document.createElement('div');
+          div.id = 'offlineIndicator';
+          div.style.cssText = `
+            position: fixed; top: 0; left: 0; right: 0;
+            background: #c62828; color: white;
+            text-align: center; padding: 6px 12px;
+            font-size: 13px; font-weight: 600;
+            z-index: 99999; display: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          `;
+          div.innerHTML = '📴 Sin conexión — Trabajando en modo offline';
+          document.body.appendChild(div);
+        }
+
+        function actualizar() {
+          crearIndicador();
+          const ind = document.getElementById('offlineIndicator');
+          if (!ind) return;
+          ind.style.display = navigator.onLine ? 'none' : 'block';
+        }
+
+        window.addEventListener('online', () => {
+          actualizar();
+          if (typeof mostrarToast === 'function') {
+            mostrarToast('🌐 Conexión restaurada', 'success');
+          }
+        });
+        window.addEventListener('offline', () => {
+          actualizar();
+          if (typeof mostrarToast === 'function') {
+            mostrarToast('📴 Modo offline activado', 'warning');
+          }
+        });
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', actualizar);
+        } else {
+          actualizar();
+        }
+      })();
+
+      // Botón "Instalar app" (cuando el navegador lo permita)
+      let deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        // Pequeño banner flotante para instalar
+        if (document.getElementById('installBanner')) return;
+        const banner = document.createElement('div');
+        banner.id = 'installBanner';
+        banner.style.cssText = `
+          position: fixed; bottom: 20px; left: 20px; right: 20px;
+          max-width: 420px; margin: 0 auto;
+          background: #1a237e; color: white;
+          padding: 14px 18px; border-radius: 12px;
+          box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+          z-index: 99998; display: flex; align-items: center;
+          gap: 12px; font-size: 14px;
+        `;
+        banner.innerHTML = `
+          <i class="fas fa-mobile-alt" style="font-size:22px; color:#ffd54f;"></i>
+          <span style="flex:1;">Instala POS Pro en tu dispositivo</span>
+          <button id="btnInstallOk" style="background:#ffd54f; color:#1a237e; border:none; padding:8px 14px; border-radius:8px; font-weight:700; cursor:pointer;">Instalar</button>
+          <button id="btnInstallNo" style="background:transparent; color:white; border:none; font-size:20px; cursor:pointer; padding:0 6px;">&times;</button>
+        `;
+        document.body.appendChild(banner);
+
+        document.getElementById('btnInstallOk').onclick = async () => {
+          banner.remove();
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            deferredPrompt = null;
+          }
+        };
+        document.getElementById('btnInstallNo').onclick = () => banner.remove();
+      });
+
+      window.addEventListener('appinstalled', () => {
+        const b = document.getElementById('installBanner');
+        if (b) b.remove();
+        if (typeof mostrarToast === 'function') {
+          mostrarToast('✅ POS Pro instalado correctamente', 'success');
+        }
+      });
     </script>
 </body>
 </html>
