@@ -6,7 +6,7 @@
    - Navegación: fallback a index.html si offline
    ============================================================ */
 
-const CACHE_VERSION = 'pos-pro-v1.0.0';
+const CACHE_VERSION = 'pos-pro-v1.0.1'; 
 
 // Recursos base (locales)
 const CORE_ASSETS = [
