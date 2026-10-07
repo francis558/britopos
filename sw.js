@@ -13,7 +13,9 @@ const CORE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './icon-192.png',    // ← NUEVO
+  './icon-512.png'
 ];
 
 // Recursos CDN (se cachean al primer uso)
